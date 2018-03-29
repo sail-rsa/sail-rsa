@@ -1,7 +1,7 @@
 from client_server_base import ClientServerBase
 import socket, threading, pickle
-from message import Message
-from message import MessageType
+from packet import Packet
+from packet import PacketType
 from user_data import UserData
 import time
 
@@ -14,30 +14,38 @@ class Server(ClientServerBase):
         self.username_to_client = {}
         super().__init__(socket)
 
-    def process_message(self, message):
-        if message.type == MessageType.CLIENT_JOIN:
-            client = message.reply_addr
-            client_data = message.data
+    def process_packet(self, packet):
+        """
+        Handles a packet recieved by the server from a client.
+        """
+        if packet.type == PacketType.CLIENT_JOIN:
+            client = packet.reply_addr
+            client_data = packet.data
             self.username_to_client[client_data.username] = client
             self.clients.append(client)
             self.client_data.append(client_data)
             self.client_to_data[client] = client_data
             for client in self.clients:
                 threading.Thread(
-                        target = self.send_message,
-                        args = (client, Message(MessageType.SERVER_BROADCAST_USER_LIST, self.client_data, self.p2p_addr))
+                        target = self.send_packet,
+                        args = (client, Packet(PacketType.SERVER_BROADCAST_USER_LIST, self.client_data, self.p2p_addr))
                 ).start()
-        elif message.type == MessageType.CLIENT_RESP_ONLINE:
-            self.clients_to_check.remove(message.reply_addr)
-        elif message.type == MessageType.CLIENT_SEND_MESSAGE:
+        elif packet.type == PacketType.CLIENT_RESP_ONLINE:
+            self.clients_to_check.remove(packet.reply_addr)
+        elif packet.type == PacketType.CLIENT_SEND_MESSAGE:
             for client in self.clients:
                 threading.Thread(
-                        target = self.send_message,
-                        args = (client, Message(MessageType.SERVER_BROADCAST_MESSAGE, message.data, self.p2p_addr))
+                        target = self.send_packet,
+                        args = (client, Packet(PacketType.SERVER_BROADCAST_MESSAGE, packet.data, self.p2p_addr))
                 ).start()
 
     def client_check_loop(self, _):
+        """
+        Queries each connected client periodically to check if they are still
+        connected. Should be run on its own thread.
+        """
         while True:
+            # Delay between each check. Client gets this many seconds to respond.
             time.sleep(5)
             update = False
             for client in self.clients_to_check:
@@ -51,8 +59,8 @@ class Server(ClientServerBase):
             if update:
                 for client in self.clients:
                     threading.Thread(
-                            target = self.send_message,
-                            args = (client, Message(MessageType.SERVER_BROADCAST_USER_LIST, self.client_data, self.p2p_addr))
+                            target = self.send_packet,
+                            args = (client, Packet(PacketType.SERVER_BROADCAST_USER_LIST, self.client_data, self.p2p_addr))
                     ).start()
 
             self.clients_to_check = []
@@ -61,8 +69,8 @@ class Server(ClientServerBase):
                 print('{}: {}'.format(client, self.client_to_data[client]))
                 self.clients_to_check.append(client)
                 threading.Thread(
-                        target = self.send_message,
-                        args = (client, Message(MessageType.SERVER_CHECK_ONLINE, '', self.p2p_addr))
+                        target = self.send_packet,
+                        args = (client, Packet(PacketType.SERVER_CHECK_ONLINE, '', self.p2p_addr))
                 ).start()
             print()
 

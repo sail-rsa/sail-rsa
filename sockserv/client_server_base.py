@@ -1,6 +1,6 @@
 import socket, threading, pickle
-from message import Message
-from message import MessageType
+from packet import Packet
+from packet import PacketType
 
 class ClientServerBase:
     def __init__(self, socket):
@@ -8,10 +8,17 @@ class ClientServerBase:
         self.peer_sockets = {}
         self.p2p_socket = None
 
-    def process_message(self, message):
+    def process_packet(self, packet):
+        """
+        Handles a packet recieved by this node. To be overridden.
+        """
         pass
 
     def start_listening(self, _):
+        """
+        Begins listening for packets sent to the input socket. When a packet is
+        recieved, it is delegated to process_packet.
+        """
         self.p2p_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.p2p_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.p2p_socket.bind(self.p2p_addr)
@@ -22,15 +29,17 @@ class ClientServerBase:
             message = conn_socket.recv(4096)
             try:
                 message = pickle.loads(message)
-                self.process_message(message)
+                self.process_packet(message)
             except pickle.UnpicklingError:
                 pass
 
         self.p2p_socket.close
 
-    def send_message(self, peer_addr, data):
-        """Sends a message with provided data to a given address, opening a new
-        p2p socket if neccesary"""
+    def send_packet(self, peer_addr, data):
+        """
+        Sends a packet with provided data to a given address, opening a new
+        p2p socket if neccesary.
+        """
         try:
             if not peer_addr in self.peer_sockets or True:
                 peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
