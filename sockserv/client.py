@@ -5,6 +5,10 @@ from packet import PacketType
 from user_data import UserData
 
 class Client(ClientServerBase):
+    def __init__(self, socket):
+        super().__init__(socket)
+        self.messages = []
+        self.user_list = []
 
     def process_packet(self, packet):
         """
@@ -16,9 +20,9 @@ class Client(ClientServerBase):
                     args = (packet.reply_addr, Packet(PacketType.CLIENT_RESP_ONLINE, '', self.p2p_addr))
             ).start()
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
-            print(packet.data)
+            self.messages.append(packet.data)
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
-            print(packet.data)
+            self.user_list = packet.data
 
 client = Client(random.randint(5000, 8000))
 threading.Thread(
@@ -32,7 +36,9 @@ threading.Thread(
 
 while True:
     message = input('')
-    threading.Thread(
+    if message == 'users':
+        print([user.username for user in client.user_list])
+    '''threading.Thread(
             target = client.send_packet,
             args = (('localhost', 5000), Packet(PacketType.CLIENT_SEND_MESSAGE, message, client.p2p_addr))
-    ).start()
+    ).start()'''
