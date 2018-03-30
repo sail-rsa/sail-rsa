@@ -7,6 +7,7 @@ class ClientServerBase:
         self.p2p_addr = ('', socket)
         self.peer_sockets = {}
         self.p2p_socket = None
+        self.max_num_connections = 1
 
     def process_packet(self, packet):
         """
@@ -22,7 +23,7 @@ class ClientServerBase:
         self.p2p_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.p2p_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.p2p_socket.bind(self.p2p_addr)
-        self.p2p_socket.listen(5)
+        self.p2p_socket.listen(self.max_num_connections)
 
         while True:
             conn_socket, addr = self.p2p_socket.accept()
