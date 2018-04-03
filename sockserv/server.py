@@ -50,10 +50,12 @@ class Server(ClientServerBase):
 
         # Client confirms that they are still connected
         elif packet.type == PacketType.CLIENT_RESP_ONLINE:
-            self.clients_to_check.remove(packet.reply_addr)
+            if packet.reply_addr in self.clients_to_check:
+                self.clients_to_check.remove(packet.reply_addr)
 
         # Client sends a chat message
         elif packet.type == PacketType.CLIENT_SEND_MESSAGE:
+            print(packet.data)
             self.broadcast_message(packet.data)
 
     def purge_clients(self):
@@ -79,7 +81,7 @@ class Server(ClientServerBase):
             self.clients_to_check = []
             print('Connected:')
             for client_addr in self.clients:
-                print('{}: {}'.format(client_addr, self.clients[client_addr]))
+                print('{}: {}'.format(client_addr, self.clients[client_addr].username))
                 self.clients_to_check.append(client_addr)
                 threading.Thread(
                         target = self.send_packet,

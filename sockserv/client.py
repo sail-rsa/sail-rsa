@@ -11,7 +11,7 @@ import rsa_soln
 class Client(ClientServerBase):
     def __init__(self, socket, e, d, n):
         super().__init__(socket)
-        self.messages = []
+        self.messages = ['test']
         self.user_list = {}
         self.e = e
         self.d = d
@@ -28,10 +28,12 @@ class Client(ClientServerBase):
         )
 
     def send_message(self, message, username):
-        if username in self.user_list: 
+        if username in self.user_list:
             e = self.user_list[username][0]
             n = self.user_list[username][1]
+            print('first')
             cyphertext = rsa_soln.encrypt(message, e, n)
+            print('sending message!')
             self.send_packet(
                 ('localhost', 8000),
                 Packet(
@@ -57,4 +59,3 @@ class Client(ClientServerBase):
             self.user_list = {}
             for user_data in packet.data:
                 self.user_list[user_data.username] = user_data.pub_key
-
