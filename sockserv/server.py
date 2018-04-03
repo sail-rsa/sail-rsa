@@ -87,7 +87,7 @@ class Server(ClientServerBase):
                 ).start()
             print()
 
-server = Server(5000)
+server = Server(8000)
 threading.Thread(
         target = server.start_listening,
         args = (None,)

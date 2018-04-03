@@ -4,11 +4,42 @@ from packet import Packet
 from packet import PacketType
 from user_data import UserData
 
+import sys
+sys.path.append('../python')
+import rsa_soln
+
 class Client(ClientServerBase):
-    def __init__(self, socket):
+    def __init__(self, socket, e, d, n):
         super().__init__(socket)
         self.messages = []
-        self.user_list = []
+        self.user_list = {}
+        self.e = e
+        self.d = d
+        self.n = n
+
+    def send_initial_connect_message(self, _):
+        self.send_packet(
+            ('localhost', 8000),
+            Packet(
+                PacketType.CLIENT_JOIN,
+                UserData('User{}'.format(random.randint(1, 100)), (self.e, self.n)),
+                self.p2p_addr
+            )
+        )
+
+    def send_message(self, message, username):
+        if username in self.user_list: 
+            e = self.user_list[username][0]
+            n = self.user_list[username][1]
+            cyphertext = rsa_soln.encrypt(message, e, n)
+            self.send_packet(
+                ('localhost', 8000),
+                Packet(
+                    PacketType.CLIENT_SEND_MESSAGE,
+                    cyphertext,
+                    self.p2p_addr
+                )
+            )
 
     def process_packet(self, packet):
         """
@@ -20,25 +51,10 @@ class Client(ClientServerBase):
                     args = (packet.reply_addr, Packet(PacketType.CLIENT_RESP_ONLINE, '', self.p2p_addr))
             ).start()
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
-            self.messages.append(packet.data)
+            decrypted_message = rsa_soln.decrypt(packet.data, self.d, self.n)
+            self.messages.append(decrypted_message)
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
-            self.user_list = packet.data
+            self.user_list = {}
+            for user_data in packet.data:
+                self.user_list[user_data.username] = user_data.pub_key
 
-client = Client(random.randint(5000, 8000))
-threading.Thread(
-        target = client.start_listening,
-        args = (None,)
-).start()
-threading.Thread(
-        target = client.send_packet,
-        args = (('localhost', 5000), Packet(PacketType.CLIENT_JOIN, UserData('User{}'.format(random.randint(1, 100)), random.randint(1000, 5000)), client.p2p_addr))
-).start()
-
-while True:
-    message = input('')
-    if message == 'users':
-        print([user.username for user in client.user_list])
-    '''threading.Thread(
-            target = client.send_packet,
-            args = (('localhost', 5000), Packet(PacketType.CLIENT_SEND_MESSAGE, message, client.p2p_addr))
-    ).start()'''
