@@ -12,21 +12,43 @@
   <body>
 
     <div id = "main">
-        <div class = "chatwindow">
-            <div class = "heading">Chat</div>
-            <div id = "messages"></div>
-            <div class = "messagebox">
-                <input type = "text" id = "msgbox"/>
-                <div class = "button" id = "submit">Send</div>
-            </div>
+      <div class = "chatwindow">
+        <div class = "heading">Chat</div>
+        <div id = "messages"></div>
+        <div class = "messagebox">
+          <input type = "text" id = "msgbox"/>
+          <div class = "button" id = "submit">Send</div>
         </div>
-        <div class = "userwindow">
-            <div class = "heading">Users</div>
-            <div id = "users"></div>
-        </div>
+      </div>
+      <div class = "userwindow">
+        <div class = "heading">Users</div>
+        <div id = "users"></div>
+      </div>
     </div>
 
     <script>
+      function submit() {
+        if ($("#msgbox").val().length > 0) {
+          $.ajax({
+            url: "/send_message",
+            type: "get",
+            data: {'msg' : $("#msgbox").val()},
+            success: function(response) {
+            },
+            error: function(xhr) {
+                //Do Something to handle error
+            }
+          });
+          $("#msgbox").val('');
+        }
+      }
+
+      $('#msgbox').keypress(function(e) {
+        if (e.which == 13) {
+          submit();
+          return false;
+        }
+      });
       setInterval(function() {
         $.ajax({
           url: "/get_users",
@@ -51,19 +73,7 @@
         });
       }, 1000);
       $('#submit').on('click', () => {
-        if ($("#msgbox").val().length > 0) {
-          $.ajax({
-            url: "/send_message",
-            type: "get",
-            data: {'msg' : $("#msgbox").val()},
-            success: function(response) {
-            },
-            error: function(xhr) {
-                  //Do Something to handle error
-            }
-          });
-          $("#msgbox").val('');
-        }
+        submit();
       });
     </script>
 
