@@ -32,7 +32,7 @@ class Client(ClientServerBase):
             e = self.user_list[username][0]
             n = self.user_list[username][1]
             print('first')
-            cyphertext = rsa_soln.encrypt(message, e, n)
+            cyphertext = rsa_soln.encrypt('_____' + message, e, n)
             print('sending message!')
             self.send_packet(
                 ('localhost', 8000),
@@ -58,4 +58,5 @@ class Client(ClientServerBase):
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:
+                print('{} {}'.format(user_data.username, user_data.pub_key))
                 self.user_list[user_data.username] = user_data.pub_key

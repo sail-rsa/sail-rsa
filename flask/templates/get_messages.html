@@ -1,5 +1,5 @@
 <label id="value_lable">
     {% for message in messages %}
-        {{ message }}<br>
+        {{ message[5:] if message[0:5] == '_____' else message[:100] }}<br>
     {% endfor %}
 </label>

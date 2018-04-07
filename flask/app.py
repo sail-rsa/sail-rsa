@@ -9,10 +9,12 @@ from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 
-
 client = None
 app = Flask(__name__)
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 
 @app.route('/')
 def index():
@@ -37,7 +39,7 @@ def get_messages():
   return render_template('get_messages.html', messages = client.messages)
 
 if __name__ == '__main__':
-  mersenne_powers = [2201, 2281, 3217, 4253, 4423, 9689, 11213]
+  mersenne_powers = [107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423]
   (power1, power2) = random.sample(mersenne_powers, 2)
   p = 2 ** power1 - 1
   q = 2 ** power2 - 1
@@ -46,7 +48,7 @@ if __name__ == '__main__':
 
   web_port = random.randint(2500, 4000) * 2
   print('Running on port {}'.format(web_port))
-  client = Client(web_port + 2, e, d, n)
+  client = Client(web_port + 1, e, d, n)
   threading.Thread(
       target = client.start_listening,
       args = (None,)

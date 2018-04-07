@@ -4,4 +4,4 @@ class UserData:
         self.pub_key = pub_key
 
     def __str__(self):
-        return '{} ({})'.format(self.username, self.pub_key)
+        return '{} ({})'.format(self.username)
