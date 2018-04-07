@@ -28,6 +28,7 @@ class ClientServerBase:
         while True:
             conn_socket, addr = self.p2p_socket.accept()
             message = conn_socket.recv(4096)
+            message.reply_addr = (addr[0], message.reply_addr[1])
             try:
                 message = pickle.loads(message)
                 self.process_packet(message)
