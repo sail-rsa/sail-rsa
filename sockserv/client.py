@@ -14,7 +14,7 @@ import rsa_soln
 class Client(ClientServerBase):
     def __init__(self, socket, e, d, n, host_addr, username, using_java):
         super().__init__(socket)
-        self.messages = ['']
+        self.messages = []
         self.user_list = {}
         self.e = e
         self.d = d
@@ -22,6 +22,7 @@ class Client(ClientServerBase):
         self.host_addr = host_addr
         self.username = username
         self.using_java = using_java
+        self.last_msg_rec = -1
 
     def send_initial_connect_message(self, _):
         self.send_packet(
@@ -65,7 +66,6 @@ class Client(ClientServerBase):
                 ciphertext = rsa_soln.encrypt(message_left, e, n)
             ciphertexts.append(ciphertext)
 
-            print('sending message!')
             self.send_packet(
                 (self.host_addr, 8000),
                 Packet(
@@ -86,9 +86,12 @@ class Client(ClientServerBase):
             ).start()
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
 
-            num_old = len(self.messages)
-            for i in range(num_old, len(packet.data)):
-                ciphertexts = packet.data[i]
+            for i in range(len(packet.data)):
+                message_data = packet.data[i]
+                if message_data[1] <= self.last_msg_rec:
+                    continue;
+                self.last_msg_rec = message_data[1]
+                ciphertexts = message_data[2]
                 message = ''
                 for portion in ciphertexts:
                     if self.using_java:
@@ -100,9 +103,8 @@ class Client(ClientServerBase):
                     else:
                         solved = rsa_soln.decrypt(portion, self.d, self.n)
                     message += solved
-                self.messages.append(str(message))
+                self.messages.append((message_data[0], str(message)))
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:
-                print('{} {}'.format(user_data.username, user_data.pub_key))
                 self.user_list[user_data.username] = user_data.pub_key

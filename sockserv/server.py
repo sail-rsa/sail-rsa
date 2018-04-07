@@ -5,7 +5,7 @@ from packet import PacketType
 from user_data import UserData
 import time
 
-MAX_SERVER_CONNECTIONS = 25
+MAX_SERVER_CONNECTIONS = 35
 
 class Server(ClientServerBase):
     def __init__(self, socket):
@@ -33,7 +33,7 @@ class Server(ClientServerBase):
         for client in self.clients:
             threading.Thread(
                     target = self.send_packet,
-                    args = (client, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history, self.p2p_addr))
+                    args = (client, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history[-5:], self.p2p_addr))
             ).start()
 
     def process_packet(self, packet):
@@ -54,13 +54,13 @@ class Server(ClientServerBase):
                 if self.time_since_response[packet.reply_addr] > 1:
                     threading.Thread(
                             target = self.send_packet,
-                            args = (packet.reply_addr, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history, self.p2p_addr))
+                            args = (packet.reply_addr, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history[-5:], self.p2p_addr))
                     ).start()
                 self.time_since_response[packet.reply_addr] = 0
 
         # Client sends a chat message
         elif packet.type == PacketType.CLIENT_SEND_MESSAGE:
-            self.message_history.append(packet.data)
+            self.message_history.append((self.clients[packet.reply_addr].username, len(self.message_history), packet.data))
             self.broadcast_messages()
 
     def purge_clients(self):

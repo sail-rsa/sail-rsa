@@ -7,7 +7,7 @@ class ClientServerBase:
         self.p2p_addr = ('', socket)
         self.peer_sockets = {}
         self.p2p_socket = None
-        self.max_num_connections = 1
+        self.max_num_connections = 5
 
     def process_packet(self, packet):
         """
