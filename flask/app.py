@@ -7,7 +7,6 @@ import threading
 import rsa_soln
 from flask import Flask, render_template, request
 import requests
-from bs4 import BeautifulSoup
 
 import subprocess
 
@@ -47,7 +46,7 @@ if __name__ == '__main__':
   p = 2 ** power1 - 1
   q = 2 ** power2 - 1
 
-  web_port = random.randint(2500, 4000) * 2
+  web_port = 4000
   print('Running on port {}'.format(web_port))
 
   username = input("Please enter a username: ").replace(',', '').strip()
