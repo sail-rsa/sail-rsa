@@ -67,7 +67,7 @@ if __name__ == '__main__':
     e, d, n = rsa_soln.generate_keys(p, q)
 
   print(e, d, n)
-  
+
   client = Client(web_port + 1, e, d, n, host_addr, username, using_java)
 
   threading.Thread(

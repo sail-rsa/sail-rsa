@@ -84,9 +84,9 @@ class Client(ClientServerBase):
             ).start()
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
 
-            self.messages = packet.data
-            for i in range(len(self.messages)):
-                ciphertexts = self.messages[i]
+            num_old = len(self.messages)
+            for i in range(num_old, len(packet.data)):
+                ciphertexts = packet.data[i]
                 message = ''
                 for portion in ciphertexts:
                     if self.using_java:
@@ -95,9 +95,9 @@ class Client(ClientServerBase):
                             line = line.decode('utf-8')
                             solved = line
                     else:
-                        solved = rsa_soln.decrypt(portion, self.d, self.n)                   
+                        solved = rsa_soln.decrypt(portion, self.d, self.n)
                     message += solved
-                self.messages[i] = str(message)
+                self.messages.append(str(message))
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:
