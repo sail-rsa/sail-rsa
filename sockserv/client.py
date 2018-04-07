@@ -46,6 +46,7 @@ class Client(ClientServerBase):
             while len(message_left) > max_msg_size:
                 if self.using_java:
                     result = subprocess.Popen(['java', '-cp', '.', 'sail/Encrypt', message_left[:max_msg_size], str(e), str(n)], stdout = subprocess.PIPE, cwd = '../java/src/')
+                    result.wait()
                     for line in result.stdout:
                         line = line.decode('utf-8')
                         ciphertext = line
@@ -56,6 +57,7 @@ class Client(ClientServerBase):
 
             if self.using_java:
                 result = subprocess.Popen(['java', '-cp', '.', 'sail/Encrypt', message_left, str(e), str(n)], stdout = subprocess.PIPE, cwd = '../java/src/')
+                result.wait()
                 for line in result.stdout:
                     line = line.decode('utf-8')
                     ciphertext = line
@@ -91,6 +93,7 @@ class Client(ClientServerBase):
                 for portion in ciphertexts:
                     if self.using_java:
                         result = subprocess.Popen(['java', '-cp', '.', 'sail/Decrypt', portion.strip(), str(self.d), str(self.n)], stdout = subprocess.PIPE, cwd = '../java/src/')
+                        result.wait()
                         for line in result.stdout:
                             line = line.decode('utf-8')
                             solved = line

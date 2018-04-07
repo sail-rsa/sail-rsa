@@ -58,8 +58,10 @@ if __name__ == '__main__':
   e, d, n = 0, 0, 0
   if using_java:
     # compile java code
-    subprocess.Popen(['javac', '-cp', '.', 'sail/Encrypt.java', 'sail/Decrypt.java', 'sail/Tuple3.java', 'sail/Utils.java', 'sail/Test.java', 'sail/GenKeys.java', 'sail/RSA.java', 'sail/RSASoln.java'], cwd = '../java/src/')
+    compiling = subprocess.Popen(['javac', '-cp', '.', 'sail/Encrypt.java', 'sail/Decrypt.java', 'sail/Tuple3.java', 'sail/Utils.java', 'sail/Test.java', 'sail/GenKeys.java', 'sail/RSA.java', 'sail/RSASoln.java'], cwd = '../java/src/')
+    compiling.wait()
     result = subprocess.Popen(['java', '-cp', '.', 'sail/GenKeys', str(p), str(q)], stdout = subprocess.PIPE, cwd = '../java/src/')
+    result.wait()
     for line in result.stdout:
       line = line.decode('utf-8')
       e, d, n = tuple(map(int, line.split()))
