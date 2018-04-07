@@ -1,0 +1,135 @@
+html, body {
+    width: 100%;
+    margin: 0;
+    border: 0;
+    height: 100%;
+    background-color: #2B2D33;
+    color: #FFD564;
+    font-family: 'CarlitoRegular';
+    font-weight: normal;
+    font-style: normal;
+}
+
+.username {
+    display: block;
+    cursor: pointer;
+}
+
+#main {
+    margin: 0 auto;
+    max-width: 1240px;
+    position: relative;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.userwindow {
+    background-color: #55575C;
+    position: absolute;
+    right: 0;
+    width: 200px;
+    height: 500px;
+    padding: 20px;
+    top: 20px;
+}
+
+.chatwindow {
+    background-color: #55575C;
+    position: absolute;
+    left: 0;
+    right: 270px;
+    top: 20px;
+    bottom: 20px;
+}
+
+.messagebox {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #FFD564;
+    height: 75px;
+}
+
+#users {
+    position: absolute;
+    top: 40px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    padding: 20px;
+}
+
+#messages {
+    position: absolute;
+    top: 40px;
+    bottom: 40px;
+    left: 0px;
+    right: 0px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+.userstomsg {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 5px;
+    bottom: 35px;
+    line-height: 30px;
+}
+
+.tomsgusr {
+    color: #2B2D33;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+input[type="text"] {
+    position: absolute;
+    left: 10px;
+    right: 55px;
+    top: 40px;
+    bottom: 5px;
+    height: 30px;
+    border: none;
+    padding: 0;
+    margin: 0;
+    outline: none;
+    padding-left: 5px;
+    padding-right: 5px;
+    width: calc(100% - 100px);
+}
+
+.button {
+    background-color: #2B2D33;
+    color: white;
+    text-align: center;
+    height: 30px;
+    line-height: 30px;
+    cursor: pointer;
+}
+
+#submit {
+    position: absolute;
+    right: 5px;
+    top: 40px;
+    bottom: 5px;
+    width: 65px;
+}
+
+.heading {
+    background-color: #FFD564;
+    color: #2B2D33;
+    position: absolute;;
+    left: 0;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    font-size: 18px;
+    padding-bottom: 8px;
+    text-align: center;
+    margin-bottom: 10px;
+    height: 22px;
+}

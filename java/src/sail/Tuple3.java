@@ -14,4 +14,9 @@ public class Tuple3 {
         this.third = third;
     }
 
+    @Override
+    public String toString() {
+        return first.toString() + " " + second.toString() + " " + third.toString();
+    }
+
 }

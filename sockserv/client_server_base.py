@@ -30,6 +30,7 @@ class ClientServerBase:
             message = conn_socket.recv(4096)
             try:
                 message = pickle.loads(message)
+                message.reply_addr = (addr[0], message.reply_addr[1])
                 self.process_packet(message)
             except pickle.UnpicklingError:
                 pass

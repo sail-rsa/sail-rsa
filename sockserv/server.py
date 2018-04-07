@@ -10,9 +10,9 @@ MAX_SERVER_CONNECTIONS = 25
 class Server(ClientServerBase):
     def __init__(self, socket):
         super().__init__(socket)
-        self.clients_to_check = []
+        self.time_since_response = {}
         self.clients = {}
-        self.username_to_client_data = {}
+        self.message_history = []
         self.max_num_connections = MAX_SERVER_CONNECTIONS
 
     def broadcast_user_list(self):
@@ -26,14 +26,14 @@ class Server(ClientServerBase):
                     args = (client, Packet(PacketType.SERVER_BROADCAST_USER_LIST, user_list, self.p2p_addr))
             ).start()
 
-    def broadcast_message(self, message):
+    def broadcast_messages(self):
         """
         Broadcasts a chat message to all clients
         """
         for client in self.clients:
             threading.Thread(
                     target = self.send_packet,
-                    args = (client, Packet(PacketType.SERVER_BROADCAST_MESSAGE, message, self.p2p_addr))
+                    args = (client, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history, self.p2p_addr))
             ).start()
 
     def process_packet(self, packet):
@@ -44,26 +44,37 @@ class Server(ClientServerBase):
         if packet.type == PacketType.CLIENT_JOIN:
             client_addr = packet.reply_addr
             client_data = packet.data
-            self.username_to_client_data[client_data.username] = client_data
             self.clients[client_addr] = client_data
+            self.time_since_response[client_addr] = 0
             self.broadcast_user_list();
 
         # Client confirms that they are still connected
         elif packet.type == PacketType.CLIENT_RESP_ONLINE:
-            self.clients_to_check.remove(packet.reply_addr)
+            if packet.reply_addr in self.time_since_response:
+                if self.time_since_response[packet.reply_addr] > 1:
+                    threading.Thread(
+                            target = self.send_packet,
+                            args = (packet.reply_addr, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history, self.p2p_addr))
+                    ).start()
+                self.time_since_response[packet.reply_addr] = 0
 
         # Client sends a chat message
         elif packet.type == PacketType.CLIENT_SEND_MESSAGE:
-            self.broadcast_message(packet.data)
+            self.message_history.append(packet.data)
+            self.broadcast_messages()
 
     def purge_clients(self):
-        ret = len(self.clients_to_check) > 0
-        for client_addr in self.clients_to_check:
-            if client_addr in self.peer_sockets:
-                del self.peer_sockets[client_addr]
-            del self.username_to_client_data[self.clients[client_addr].username]
-            del self.clients[client_addr]
-        return ret
+        to_delete = []
+        for client_addr in self.time_since_response:
+            if self.time_since_response[client_addr] > 5:
+                if client_addr in self.peer_sockets:
+                    del self.peer_sockets[client_addr]
+                del self.clients[client_addr]
+                to_delete.append(client_addr)
+                removed_one = True
+        for client_addr in to_delete:
+            del self.time_since_response[client_addr]
+        return len(to_delete) > 0
 
     def client_check_loop(self, _):
         """
@@ -76,11 +87,11 @@ class Server(ClientServerBase):
             if self.purge_clients():
                 self.broadcast_user_list();
 
-            self.clients_to_check = []
+
             print('Connected:')
             for client_addr in self.clients:
-                print('{}: {}'.format(client_addr, self.clients[client_addr]))
-                self.clients_to_check.append(client_addr)
+                self.time_since_response[client_addr] += 1
+                print('{}: {}'.format(client_addr, self.clients[client_addr].username))
                 threading.Thread(
                         target = self.send_packet,
                         args = (client_addr, Packet(PacketType.SERVER_CHECK_ONLINE, '', self.p2p_addr))
