@@ -3,6 +3,7 @@ import socket, threading, pickle, random
 from packet import Packet
 from packet import PacketType
 from user_data import UserData
+import math
 
 import sys
 sys.path.append('../python')
@@ -30,17 +31,27 @@ class Client(ClientServerBase):
         )
 
     def send_message(self, message, username):
+        message = message[:300]
         if username in self.user_list:
             e = self.user_list[username][0]
             n = self.user_list[username][1]
-            print('first')
-            cyphertext = rsa_soln.encrypt('_____' + message, e, n)
+            max_msg_size = math.floor(math.log2(n) / 8)
+
+            message_left = '_____' + message
+            ciphertexts = []
+            while len(message_left) > max_msg_size:
+                ciphertext = rsa_soln.encrypt(message_left[:max_msg_size], e, n)
+                ciphertexts.append(ciphertext)
+                message_left = message_left[max_msg_size:]
+            ciphertext = rsa_soln.encrypt(message_left, e, n)
+            ciphertexts.append(ciphertext)
+
             print('sending message!')
             self.send_packet(
                 (self.host_addr, 8000),
                 Packet(
                     PacketType.CLIENT_SEND_MESSAGE,
-                    cyphertext,
+                    ciphertexts,
                     self.p2p_addr
                 )
             )
@@ -57,8 +68,12 @@ class Client(ClientServerBase):
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
             self.messages = packet.data
             for i in range(len(self.messages)):
-                message = self.messages[i]
-                self.messages[i] = str(rsa_soln.decrypt(message, self.d, self.n))
+                ciphertexts = self.messages[i]
+                message = ''
+                for portion in ciphertexts:
+                    solved = rsa_soln.decrypt(portion, self.d, self.n)
+                    message += solved
+                self.messages[i] = str(message)
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:
