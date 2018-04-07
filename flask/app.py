@@ -27,7 +27,9 @@ def get_users():
 @app.route('/send_message')
 def send_message():
   msg = request.args.get('msg')
-  for user in client.user_list:
+  to_message = request.args.get('tomsg').split(',')
+  print(to_message)
+  for user in to_message:
     threading.Thread(
         target = client.send_message,
         args = (msg, user)
@@ -49,9 +51,9 @@ if __name__ == '__main__':
   web_port = random.randint(2500, 4000) * 2
   print('Running on port {}'.format(web_port))
 
-  username = input("Please enter a username: ")
+  username = input("Please enter a username: ").replace(',', '').strip()
   host_addr = input("Please enter the host address: ")
-  
+
   client = Client(web_port + 1, e, d, n, host_addr, username)
   threading.Thread(
       target = client.start_listening,

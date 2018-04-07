@@ -12,7 +12,7 @@ import rsa_soln
 class Client(ClientServerBase):
     def __init__(self, socket, e, d, n, host_addr, username):
         super().__init__(socket)
-        self.messages = ['test']
+        self.messages = ['']
         self.user_list = {}
         self.e = e
         self.d = d

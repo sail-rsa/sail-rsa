@@ -47,6 +47,10 @@ class Server(ClientServerBase):
             self.clients[client_addr] = client_data
             self.time_since_response[client_addr] = 0
             self.broadcast_user_list();
+            threading.Thread(
+                    target = self.send_packet,
+                    args = (packet.reply_addr, Packet(PacketType.SERVER_BROADCAST_MESSAGE, self.message_history, self.p2p_addr))
+            ).start()
 
         # Client confirms that they are still connected
         elif packet.type == PacketType.CLIENT_RESP_ONLINE:
