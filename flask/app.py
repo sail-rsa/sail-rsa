@@ -48,7 +48,11 @@ if __name__ == '__main__':
 
   web_port = random.randint(2500, 4000) * 2
   print('Running on port {}'.format(web_port))
-  client = Client(web_port + 1, e, d, n)
+
+  username = input("Please enter a username: ")
+  host_addr = input("Please enter the host address: ")
+  
+  client = Client(web_port + 1, e, d, n, host_addr, username)
   threading.Thread(
       target = client.start_listening,
       args = (None,)
