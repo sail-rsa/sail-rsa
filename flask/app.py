@@ -9,6 +9,8 @@ from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 
+import subprocess
+
 client = None
 app = Flask(__name__)
 
@@ -44,15 +46,27 @@ if __name__ == '__main__':
   p = 2 ** power1 - 1
   q = 2 ** power2 - 1
 
-  e, d, n = rsa_soln.generate_keys(p, q)
-
   web_port = random.randint(2500, 4000) * 2
   print('Running on port {}'.format(web_port))
 
   username = input("Please enter a username: ")
   host_addr = input("Please enter the host address: ")
+  using_java = input("Did you use java? Please enter (y/n) ") == 'y'
+
+  e, d, n = 0, 0, 0
+  if using_java:
+    # compile java code
+    subprocess.Popen(['javac', '-cp', '.', 'sail/Encrypt.java', 'sail/Decrypt.java', 'sail/Tuple3.java', 'sail/Utils.java', 'sail/Test.java', 'sail/GenKeys.java', 'sail/RSA.java', 'sail/RSASoln.java'], cwd = '../java/src/')
+    result = subprocess.Popen(['java', '-cp', '.', 'sail/GenKeys', str(p), str(q)], stdout = subprocess.PIPE, cwd = '../java/src/')
+    for line in result.stdout:
+      line = line.decode('utf-8')
+      e, d, n = tuple(map(int, line.split()))
+  else:
+    e, d, n = rsa_soln.generate_keys(p, q)
+
+  print(e, d, n)
   
-  client = Client(web_port + 1, e, d, n, host_addr, username)
+  client = Client(web_port + 1, e, d, n, host_addr, username, using_java)
   threading.Thread(
       target = client.start_listening,
       args = (None,)
