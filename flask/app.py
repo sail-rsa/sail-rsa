@@ -39,7 +39,7 @@ def get_messages():
   return render_template('get_messages.html', messages = client.messages)
 
 if __name__ == '__main__':
-  mersenne_powers = [107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423]
+  mersenne_powers = [107, 127, 521, 607, 1279, 2203, 2281]
   (power1, power2) = random.sample(mersenne_powers, 2)
   p = 2 ** power1 - 1
   q = 2 ** power2 - 1
@@ -48,7 +48,11 @@ if __name__ == '__main__':
 
   web_port = random.randint(2500, 4000) * 2
   print('Running on port {}'.format(web_port))
-  client = Client(web_port + 1, e, d, n)
+
+  username = input("Please enter a username: ")
+  host_addr = input("Please enter the host address: ")
+  
+  client = Client(web_port + 1, e, d, n, host_addr, username)
   threading.Thread(
       target = client.start_listening,
       args = (None,)

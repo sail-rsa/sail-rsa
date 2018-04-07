@@ -9,20 +9,22 @@ sys.path.append('../python')
 import rsa_soln
 
 class Client(ClientServerBase):
-    def __init__(self, socket, e, d, n):
+    def __init__(self, socket, e, d, n, host_addr, username):
         super().__init__(socket)
         self.messages = ['test']
         self.user_list = {}
         self.e = e
         self.d = d
         self.n = n
+        self.host_addr = host_addr
+        self.username = username
 
     def send_initial_connect_message(self, _):
         self.send_packet(
-            ('10.195.252.93', 8000),
+            (self.host_addr, 8000),
             Packet(
                 PacketType.CLIENT_JOIN,
-                UserData('User{}'.format(random.randint(1, 100)), (self.e, self.n)),
+                UserData(self.username, (self.e, self.n)),
                 self.p2p_addr
             )
         )
@@ -35,7 +37,7 @@ class Client(ClientServerBase):
             cyphertext = rsa_soln.encrypt('_____' + message, e, n)
             print('sending message!')
             self.send_packet(
-                ('10.195.252.93', 8000),
+                (self.host_addr, 8000),
                 Packet(
                     PacketType.CLIENT_SEND_MESSAGE,
                     cyphertext,
