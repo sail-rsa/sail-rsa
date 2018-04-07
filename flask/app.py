@@ -39,7 +39,7 @@ def get_messages():
   return render_template('get_messages.html', messages = client.messages)
 
 if __name__ == '__main__':
-  mersenne_powers = [107, 127, 521, 607, 1279, 2203, 2281, 3217, 4253, 4423]
+  mersenne_powers = [107, 127, 521, 607, 1279, 2203, 2281]
   (power1, power2) = random.sample(mersenne_powers, 2)
   p = 2 ** power1 - 1
   q = 2 ** power2 - 1

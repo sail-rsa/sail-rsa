@@ -19,7 +19,7 @@ class Client(ClientServerBase):
 
     def send_initial_connect_message(self, _):
         self.send_packet(
-            ('10.195.252.93', 8000),
+            ('localhost', 8000),
             Packet(
                 PacketType.CLIENT_JOIN,
                 UserData('User{}'.format(random.randint(1, 100)), (self.e, self.n)),
@@ -35,7 +35,7 @@ class Client(ClientServerBase):
             cyphertext = rsa_soln.encrypt('_____' + message, e, n)
             print('sending message!')
             self.send_packet(
-                ('10.195.252.93', 8000),
+                ('localhost', 8000),
                 Packet(
                     PacketType.CLIENT_SEND_MESSAGE,
                     cyphertext,
@@ -53,8 +53,10 @@ class Client(ClientServerBase):
                     args = (packet.reply_addr, Packet(PacketType.CLIENT_RESP_ONLINE, '', self.p2p_addr))
             ).start()
         elif packet.type == PacketType.SERVER_BROADCAST_MESSAGE:
-            decrypted_message = rsa_soln.decrypt(packet.data, self.d, self.n)
-            self.messages.append(decrypted_message)
+            self.messages = packet.data
+            for i in range(len(self.messages)):
+                message = self.messages[i]
+                self.messages[i] = rsa_soln.decrypt(message, self.d, self.n)
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:
