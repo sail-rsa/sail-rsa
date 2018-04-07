@@ -58,7 +58,7 @@ class Client(ClientServerBase):
             self.messages = packet.data
             for i in range(len(self.messages)):
                 message = self.messages[i]
-                self.messages[i] = rsa_soln.decrypt(message, self.d, self.n)
+                self.messages[i] = str(rsa_soln.decrypt(message, self.d, self.n))
         elif packet.type == PacketType.SERVER_BROADCAST_USER_LIST:
             self.user_list = {}
             for user_data in packet.data:

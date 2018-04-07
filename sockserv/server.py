@@ -64,14 +64,17 @@ class Server(ClientServerBase):
             self.broadcast_messages()
 
     def purge_clients(self):
-        removed_one = False
+        to_delete = []
         for client_addr in self.time_since_response:
             if self.time_since_response[client_addr] > 5:
                 if client_addr in self.peer_sockets:
                     del self.peer_sockets[client_addr]
                 del self.clients[client_addr]
+                to_delete.append(client_addr)
                 removed_one = True
-        return removed_one
+        for client_addr in to_delete:
+            del self.time_since_response[client_addr]
+        return len(to_delete) > 0
 
     def client_check_loop(self, _):
         """
