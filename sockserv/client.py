@@ -19,7 +19,7 @@ class Client(ClientServerBase):
 
     def send_initial_connect_message(self, _):
         self.send_packet(
-            ('localhost', 8000),
+            ('10.195.252.93', 8000),
             Packet(
                 PacketType.CLIENT_JOIN,
                 UserData('User{}'.format(random.randint(1, 100)), (self.e, self.n)),
@@ -35,7 +35,7 @@ class Client(ClientServerBase):
             cyphertext = rsa_soln.encrypt('_____' + message, e, n)
             print('sending message!')
             self.send_packet(
-                ('localhost', 8000),
+                ('10.195.252.93', 8000),
                 Packet(
                     PacketType.CLIENT_SEND_MESSAGE,
                     cyphertext,
