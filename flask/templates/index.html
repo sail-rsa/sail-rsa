@@ -7,6 +7,7 @@
     <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <link rel = "stylesheet" href = "{{ url_for('static', filename='style.css') }}">
     <link rel = "stylesheet" media = "screen" href="https://fontlibrary.org/face/carlito" type = "text/css"/>
+    <title>RSA Messager</title>
   </head>
 
   <body>
@@ -16,6 +17,7 @@
         <div class = "heading">Chat</div>
         <div id = "messages"></div>
         <div class = "messagebox">
+          <div class = "userstomsg"></div>
           <input type = "text" id = "msgbox"/>
           <div class = "button" id = "submit">Send</div>
         </div>
@@ -27,13 +29,19 @@
     </div>
 
     <script>
+      to_message = [];
+
+
       function submit() {
-        if ($("#msgbox").val().length > 0) {
+        if ($("#msgbox").val().length > 0 && to_message.length > 0) {
+          console.log(to_message);
           $.ajax({
             url: "/send_message",
             type: "get",
-            data: {'msg' : $("#msgbox").val()},
+            data: {'msg' : $("#msgbox").val(), 'tomsg' : to_message.join(',')},
             success: function(response) {
+              to_message = [];
+              $('.tomsgusr').remove();
             },
             error: function(xhr) {
                 //Do Something to handle error
@@ -42,6 +50,7 @@
           $("#msgbox").val('');
         }
       }
+
 
       $('#msgbox').keypress(function(e) {
         if (e.which == 13) {
@@ -54,8 +63,26 @@
           url: "/get_users",
           type: "get",
           success: function(response) {
-            console.log(response);
             $("#users").html(response);
+            $('.username').on('click', function() {
+              var username = $(this).attr('label');
+              if (!to_message.includes(username)) {
+                to_message.push(username);
+                console.log(username);
+                $('.userstomsg').append($('<span class="tomsgusr" label="' + username + '">(x) ' + username + '</span>'));
+
+                  $('.tomsgusr').on('click', function() {
+                    var username = $(this).attr('label');
+                    if (to_message.includes(username)) {
+                      var idx = to_message.indexOf(username);
+                      to_message.splice(idx, 1);
+                      console.log(username);
+                    }
+                    $(this).remove();
+                  });
+              }
+            });
+
           },
           error: function(xhr) {
             //Do Something to handle error
